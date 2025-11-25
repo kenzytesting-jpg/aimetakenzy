@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>— Chat Ai — Base Chat Ai Kenzyabigail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background: #f5f6fa; display: flex; justify-content: center; padding: 20px; }
+    .chat-container {
+      background: #fff; width: 420px; max-width: 95%; border-radius: 20px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+      min-height: 600px;
+    }
+    .header { text-align: center; padding: 25px 15px 10px; background: #fff; }
+    .header h2 { font-size: 24px; font-weight: 700; color: #111; }
+    .header p { font-size: 14px; color: #777; margin-top: 5px; }
+    .avatar-spin {
+      width: 80px; height: 80px; border-radius: 50%; margin: 10px auto;
+      animation: spin 6s linear infinite; display: block;
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .chat-box {
+      flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+      background: #f9f9fb;
+    }
+    .msg { max-width: 80%; padding: 10px 14px; border-radius: 15px; word-wrap: break-word; animation: fadeIn .3s ease; font-size: 13px; }
+    .user { align-self: flex-end; background: #e3e6ff; color: #111; border-bottom-right-radius: 5px; }
+    .ai { align-self: flex-start; background: #1e1f2e; color: #fff; border-bottom-left-radius: 5px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .input-area { display: flex; flex-direction: column; padding: 12px; border-top: 1px solid #ddd; background: #fff; position: sticky; bottom: 0; }
+    .input-area input {
+      flex: 1; padding: 12px 18px; border: 1px solid #ccc; border-radius: 18px; outline: none; font-size: 14px;
+    }
+    .input-area button {
+      background: #6b4eff; color: white; border: none; margin-top: 10px;
+      padding: 10px; border-radius: 18px; cursor: pointer; font-size: 20px;
+      transition: background 0.3s; width: 100%;
+    }
+    .input-area button:hover { background: #5940d9; }
+    .typing { font-style: italic; opacity: 0.7; }
+    html { scroll-behavior: smooth; }
+
+    /* teks penjelasan bot warna-warni */
+    .bot-info {
+      margin-top: 8px; text-align: center; font-size: 13px; font-weight: 600;
+      background: linear-gradient(270deg, #ff4d4d, #ffcc00, #33cc33, #3399ff, #cc33ff);
+      background-size: 1000% 1000%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbow 8s linear infinite;
+    }
+    @keyframes rainbow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="header">
+      <h2>— Chat Ai</h2>
+      <p>Asisten cerdas yang menjawab langsung dan santai ✦</p>
+      <img src="https://files.catbox.moe/c71bjk.jpeg" class="avatar-spin" alt="— Chat Ai">
+    </div>
+
+    <div class="chat-box" id="chatBox">
+      <div class="msg ai">Halo! Gue Ai Ganteng, siap bantu kamu dengan cepat dan santai ✦</div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Tulis pesanmu..." />
+      <button onclick="kirimPesan()">💬 Kirim</button>
+      <div class="bot-info" id="botInfo">✦ Gue akan menjawab dengan santai dan cepat ✦</div>
+    </div>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chatBox');
+    const input = document.getElementById('userInput');
+    const botInfo = document.getElementById('botInfo');
+
+    function tambahPesan(sender, text) {
+      const msg = document.createElement('div');
+      msg.classList.add('msg', sender);
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      window.scrollTo(0, document.body.scrollHeight);
+      return msg;
+    }
+
+    function typingEffect(element, text, speed = 30) {
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+          window.scrollTo(0, document.body.scrollHeight);
+        }
+      }
+      type();
+    }
+
+    async function kirimPesan() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      tambahPesan('user', text);
+      input.value = '';
+
+      const typingMsg = tambahPesan('ai', "Gue sedang mengetik...");
+      typingMsg.classList.add('typing');
+
+      try {
+        const res = await fetch(`https://api.ootaizumi.web.id/ai/copilot?prompt=${encodeURIComponent(text)}`);
+        const data = await res.json();
+        const jawab = data.result?.text || data.result || "Kosong 😅";
+
+        typingMsg.remove();
+        const aiMsg = tambahPesan('ai', "");
+        typingEffect(aiMsg, jawab, 35);
+      } catch (err) {
+        typingMsg.remove();
+        tambahPesan('ai', "Ups, koneksi error Perbaiki Sendiri Kontol Lu Kan Dev😂");
+      }
+    }
+
+    input.addEventListener("input", () => {
+      botInfo.textContent = "✦ Gue sedang siap menjawab pesanmu ✦";
+    });
+
+    input.addEventListener("keypress", e => {
+      if (e.key === "Enter") kirimPesan();
+    });
+  </script>
+</body>
+</html>
